@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
@@ -86,10 +86,26 @@ interface RoundResult {
 export default function MultiplayerGamePage() {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const supabase = createClient();
   const { user } = useAuth();
 
-  const lobbyCode = params.code as string;
+  // URL'den direkt code'u oku (Vercel'de useParams() bug'lı)
+  const getLobbyCodeFromUrl = (): string | null => {
+    // Pathname: /multiplayer/game/J9N3XZ
+    const match = pathname?.match(/\/multiplayer\/game\/([A-Z0-9]+)/);
+    if (match && match[1]) {
+      return match[1];
+    }
+    // Fallback: useParams() kullan (development için)
+    const codeFromParams = params.code as string;
+    if (codeFromParams && !codeFromParams.includes('drp:')) {
+      return codeFromParams;
+    }
+    return null;
+  };
+
+  const lobbyCode = getLobbyCodeFromUrl();
 
   const [lobby, setLobby] = useState<Lobby | null>(null);
   const [currentRound, setCurrentRound] = useState<Round | null>(null);
