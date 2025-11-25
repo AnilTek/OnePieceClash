@@ -1,34 +1,47 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function ForgotPasswordPage() {
+export default function ResetPasswordPage() {
+  const router = useRouter();
   const supabase = createClient();
-  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setSuccess(false);
+
+    if (password !== confirmPassword) {
+      setError("Şifreler eşleşmiyor");
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Şifre en az 6 karakter olmalıdır");
+      setLoading(false);
+      return;
+    }
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset`,
+      const { error } = await supabase.auth.updateUser({
+        password: password,
       });
 
       if (error) throw error;
 
-      setSuccess(true);
-      setEmail("");
+      alert("Şifreniz başarıyla güncellendi!");
+      router.push("/auth/login");
     } catch (error: any) {
       setError(error.message || "Bir hata oluştu");
     } finally {
@@ -41,10 +54,10 @@ export default function ForgotPasswordPage() {
       <Card className="w-full max-w-md mx-4">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Şifremi Unuttum
+            Yeni Şifre Belirle
           </CardTitle>
           <CardDescription className="text-center">
-            Email adresinize şifre sıfırlama linki göndereceğiz
+            Hesabınız için yeni bir şifre oluşturun
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -54,28 +67,37 @@ export default function ForgotPasswordPage() {
             </div>
           )}
 
-          {success && (
-            <div className="p-3 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400 rounded-md">
-              Şifre sıfırlama linki email adresinize gönderildi. Lütfen email kutunuzu kontrol edin.
-            </div>
-          )}
-
           <form onSubmit={handleResetPassword} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="password">Yeni Şifre</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="ornek@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
+                minLength={6}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Şifre Tekrar</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
                 disabled={loading}
               />
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Gönderiliyor..." : "Sıfırlama Linki Gönder"}
+              {loading ? "Güncelleniyor..." : "Şifreyi Güncelle"}
             </Button>
           </form>
 
@@ -86,9 +108,10 @@ export default function ForgotPasswordPage() {
             >
               Giriş sayfasına dön
             </a>
-      </div>
+          </div>
         </CardContent>
       </Card>
     </div>
   );
 }
+
