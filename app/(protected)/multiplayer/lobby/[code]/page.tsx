@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
@@ -46,18 +46,32 @@ interface LobbyPlayer {
 export default function LobbyPage() {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const supabase = createClient();
   const { user } = useAuth();
 
-  const lobbyCode = params.code as string;
+  // URL'den direkt code'u oku (Vercel'de useParams() bug'lı)
+  const getLobbyCodeFromUrl = (): string | null => {
+    // Pathname: /multiplayer/lobby/J9N3XZ
+    const match = pathname?.match(/\/multiplayer\/lobby\/([A-Z0-9]+)/);
+    if (match && match[1]) {
+      return match[1];
+    }
+    // Fallback: useParams() kullan (development için)
+    const codeFromParams = params.code as string;
+    if (codeFromParams && !codeFromParams.includes('drp:')) {
+      return codeFromParams;
+    }
+    return null;
+  };
+
+  const lobbyCode = getLobbyCodeFromUrl();
 
   // DEBUG: Params ve lobbyCode logları
+  console.log("🔍 DEBUG - pathname:", pathname);
   console.log("🔍 DEBUG - params:", params);
   console.log("🔍 DEBUG - params.code:", params.code);
-  console.log("🔍 DEBUG - params.code type:", typeof params.code);
-  console.log("🔍 DEBUG - lobbyCode:", lobbyCode);
-  console.log("🔍 DEBUG - lobbyCode type:", typeof lobbyCode);
-  console.log("🔍 DEBUG - lobbyCode JSON:", JSON.stringify(lobbyCode));
+  console.log("🔍 DEBUG - lobbyCode (extracted):", lobbyCode);
 
   const [lobby, setLobby] = useState<Lobby | null>(null);
   const [players, setPlayers] = useState<LobbyPlayer[]>([]);
