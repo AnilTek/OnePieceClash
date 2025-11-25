@@ -9,8 +9,19 @@ import "./globals.css";
 const defaultUrl = process.env.NEXT_PUBLIC_SITE_URL || 
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
+// URL validation - eğer protokol yoksa ekle
+const getValidUrl = (url: string): string => {
+  if (!url) return "http://localhost:3000";
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  return `https://${url}`;
+};
+
+const validDefaultUrl = getValidUrl(defaultUrl);
+
 export const metadata: Metadata = {
-  metadataBase: new URL(defaultUrl),
+  metadataBase: new URL(validDefaultUrl),
   title: "Onepiecedle Clash",
   description: "One Piece Wordle-style game",
   robots: {
