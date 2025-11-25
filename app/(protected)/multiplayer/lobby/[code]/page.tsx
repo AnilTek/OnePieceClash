@@ -51,6 +51,14 @@ export default function LobbyPage() {
 
   const lobbyCode = params.code as string;
 
+  // DEBUG: Params ve lobbyCode logları
+  console.log("🔍 DEBUG - params:", params);
+  console.log("🔍 DEBUG - params.code:", params.code);
+  console.log("🔍 DEBUG - params.code type:", typeof params.code);
+  console.log("🔍 DEBUG - lobbyCode:", lobbyCode);
+  console.log("🔍 DEBUG - lobbyCode type:", typeof lobbyCode);
+  console.log("🔍 DEBUG - lobbyCode JSON:", JSON.stringify(lobbyCode));
+
   const [lobby, setLobby] = useState<Lobby | null>(null);
   const [players, setPlayers] = useState<LobbyPlayer[]>([]);
   const [loading, setLoading] = useState(true);

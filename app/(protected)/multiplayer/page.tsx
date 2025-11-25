@@ -73,6 +73,11 @@ export default function MultiplayerPage() {
         console.log("✅ Lobby created:", code);
       }
 
+      // DEBUG: Redirect öncesi log
+      console.log("🔍 DEBUG - Redirecting with code:", code);
+      console.log("🔍 DEBUG - Code type:", typeof code);
+      console.log("🔍 DEBUG - Code value:", JSON.stringify(code));
+
       // Lobi sayfasına yönlendir
       router.push(`/multiplayer/lobby/${code}`);
     } catch (err: any) {
